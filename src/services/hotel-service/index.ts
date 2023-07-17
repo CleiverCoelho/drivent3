@@ -20,12 +20,10 @@ async function getAllHotels(userId: number) : Promise<Hotel[]>{
 
   const payment : Payment = await paymentsRepository.findPaymentByTicketId(ticket.id);
   if(!payment) throw paymentRequiredError();
-  // const booking : Booking = await bookinigRepositorie.getUserBooking(userId);
-  // if(!booking) throw notFoundError();
 
   const hotels : Hotel[] = await hotelRepository.getAllHotels();
   if(!hotels || hotels.length === 0 || hotels === undefined) throw notFoundError();
-  console.log(hotels);
+  // console.log(hotels);
   return hotels;
 }
 
