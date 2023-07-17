@@ -11,7 +11,7 @@ export async function getAllHotels(req: AuthenticatedRequest, res: Response) {
 
     try {
       const hotels : Hotel[] = await hotelService.getAllHotels(userId);
-      if(hotels.length === 0) throw notFoundError();
+      // if(hotels.length === 0) throw notFoundError();
       // if(true) throw notFoundError();
       return res.status(httpStatus.OK).send(hotels);
     }
@@ -42,7 +42,7 @@ export async function getHotelRooms(req: AuthenticatedRequest, res: Response) {
     if (!hotelId) return res.sendStatus(httpStatus.BAD_REQUEST);
 
     const hotel = await hotelService.getHotelRooms(hotelId, userId);
-    if(!hotel) throw notFoundError();
+    // if(!hotel) throw notFoundError();
     return res.status(httpStatus.OK).send(hotel);
   } catch(error) {
     if (error.name === 'NotFoundError') {
