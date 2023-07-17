@@ -6,7 +6,7 @@ import ticketsRepository from '@/repositories/tickets-repository';
 import paymentsRepository from '@/repositories/payments-repository';
 import enrollmentRepository from '@/repositories/enrollment-repository';
 import { paymentRequiredError } from '@/errors/payment-required';
-import { Enrollment, Payment, Ticket, TicketType } from '@prisma/client';
+import { Booking, Enrollment, Payment, Ticket, TicketType } from '@prisma/client';
 import { Room, Hotel } from '@prisma/client';
 
 async function getAllHotels(userId: number) : Promise<Hotel[]>{
@@ -16,10 +16,8 @@ async function getAllHotels(userId: number) : Promise<Hotel[]>{
   const ticket : Ticket & {TicketType : TicketType} = await ticketsRepository.findTicketByEnrollmentId(enrollmentInfo.id);
   if(!ticket) throw notFoundError();
   if(ticket.TicketType.isRemote) throw paymentRequiredError();
-  if(!ticket.TicketType.includesHotel) throw paymentRequiredError();
-
-  const payment : Payment = await paymentsRepository.findPaymentByTicketId(ticket.id);
-  if(!payment) throw paymentRequiredError();
+  if(!ticket.TicketType.includesHotel) throw paymentRequiredError();  
+  if(ticket.status === 'RESERVED') throw paymentRequiredError();
 
   const hotels : Hotel[] = await hotelRepository.getAllHotels();
   if(!hotels || hotels.length === 0 || hotels === undefined) throw notFoundError();
@@ -41,9 +39,7 @@ async function getHotelRooms(hotelId : number, userId: number) : Promise<HotelWi
   if(!ticket) throw notFoundError();
   if(ticket.TicketType.isRemote) throw paymentRequiredError();
   if(!ticket.TicketType.includesHotel) throw paymentRequiredError();
-
-  const payment : Payment = await paymentsRepository.findPaymentByTicketId(ticket.id);
-  if(!payment) throw paymentRequiredError();
+  if(ticket.status === 'RESERVED') throw paymentRequiredError();
 
   const hotel : Hotel = await hotelRepository.getHotelById(hotelId);
   if(!hotel) throw notFoundError();
@@ -56,7 +52,6 @@ async function getHotelRooms(hotelId : number, userId: number) : Promise<HotelWi
     updatedAt: hotel.updatedAt.toISOString(),
     Rooms : parsedRooms
   }
-
   return hotelWithRooms;
 }
 
