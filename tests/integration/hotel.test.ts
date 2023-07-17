@@ -13,7 +13,6 @@ const server = supertest(app);
 
 beforeAll(async ()=> {
     await init();
-    // await prisma.hotel.deleteMany();
 })
 
 beforeEach(async ()=> {
