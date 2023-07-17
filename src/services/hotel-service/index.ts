@@ -16,11 +16,14 @@ async function getAllHotels(userId: number) : Promise<Hotel[]>{
   const ticket : Ticket & {TicketType : TicketType} = await ticketsRepository.findTicketByEnrollmentId(enrollmentInfo.id);
   if(!ticket) throw notFoundError();
   if(ticket.TicketType.isRemote) throw paymentRequiredError();
-  if(!ticket.TicketType.includesHotel) throw paymentRequiredError();  
-  if(ticket.status === 'RESERVED') throw paymentRequiredError();
+  if(!ticket.TicketType.includesHotel) throw paymentRequiredError();
+
+  const payment : Payment = await paymentsRepository.findPaymentByTicketId(ticket.id);
+  if(!payment) throw paymentRequiredError();
 
   const hotels : Hotel[] = await hotelRepository.getAllHotels();
   if(!hotels || hotels.length === 0 || hotels === undefined) throw notFoundError();
+  console.log(hotels);
   return hotels;
 }
 
@@ -39,7 +42,9 @@ async function getHotelRooms(hotelId : number, userId: number) : Promise<HotelWi
   if(!ticket) throw notFoundError();
   if(ticket.TicketType.isRemote) throw paymentRequiredError();
   if(!ticket.TicketType.includesHotel) throw paymentRequiredError();
-  if(ticket.status === 'RESERVED') throw paymentRequiredError();
+
+  const payment : Payment = await paymentsRepository.findPaymentByTicketId(ticket.id);
+  if(!payment) throw paymentRequiredError();
 
   const hotel : Hotel = await hotelRepository.getHotelById(hotelId);
   if(!hotel) throw notFoundError();

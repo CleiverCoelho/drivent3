@@ -182,8 +182,6 @@ describe('GET /hotels/:hotelId when token is valid', () => {
 
         await createPayment(ticket.id, ticketType.price);
 
-        await createHotels();
-
         const {status, body} = await server.get('/hotels/100000').set('Authorization', `Bearer ${token}`);
 
         expect(status).toEqual(httpStatus.NOT_FOUND);
