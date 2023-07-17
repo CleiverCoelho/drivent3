@@ -31,7 +31,7 @@ export async function getAllHotels(req: AuthenticatedRequest, res: Response) {
           message: error.message,
         });
       }
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error);
+      return res.status(httpStatus.BAD_REQUEST).send(error);
   }
 }
 
@@ -62,7 +62,7 @@ export async function getHotelRooms(req: AuthenticatedRequest, res: Response) {
         message: error.message,
       });
     }
-    return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error);
+    return res.status(httpStatus.BAD_REQUEST).send(error);
   }
 }
 

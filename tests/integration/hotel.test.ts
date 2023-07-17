@@ -56,6 +56,24 @@ describe('GET /hotels when token is valid', () => {
         
     });
 
+    it('should respond with 404 if there is no hotels',async () => {
+        const user = await createUser();
+        const token = await generateValidToken(user);
+        const enrollment = await createEnrollmentWithAddress(user);
+        const isRemote = false;
+        const includesHotel = true;
+        const ticketType = await createTicketTypeForHotel(isRemote, includesHotel);
+        const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
+
+        await createPayment(ticket.id, ticketType.price);
+  
+        const {status, body} = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
+  
+        expect(status).toEqual(httpStatus.OK);
+        expect(body).toEqual([])
+        
+    });
+
     it('should respond with status 402 when ticket is not paid', async () => {
         const user = await createUser();
         const token = await generateValidToken(user);
