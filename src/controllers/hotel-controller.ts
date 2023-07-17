@@ -31,7 +31,7 @@ export async function getAllHotels(req: AuthenticatedRequest, res: Response) {
           message: error.message,
         });
       }
-      return res.status(httpStatus.BAD_REQUEST).send(error);
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error);
   }
 }
 
@@ -41,10 +41,9 @@ export async function getHotelRooms(req: AuthenticatedRequest, res: Response) {
   try {
     if (!hotelId) return res.sendStatus(httpStatus.BAD_REQUEST);
 
-    const payment = await hotelService.getHotelRooms(hotelId, userId);
-    if (!payment.id) throw paymentRequiredError();
-  
-    return res.status(httpStatus.OK).send(payment);
+    const hotel = await hotelService.getHotelRooms(hotelId, userId);
+    if(!hotel) throw notFoundError();
+    return res.status(httpStatus.OK).send(hotel);
   } catch(error) {
     if (error.name === 'NotFoundError') {
       return res.status(httpStatus.NOT_FOUND).send({

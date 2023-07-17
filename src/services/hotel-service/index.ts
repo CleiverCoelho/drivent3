@@ -6,7 +6,7 @@ import ticketsRepository from '@/repositories/tickets-repository';
 import paymentsRepository from '@/repositories/payments-repository';
 import enrollmentRepository from '@/repositories/enrollment-repository';
 import { paymentRequiredError } from '@/errors/payment-required';
-import { Booking, Enrollment, Payment, Ticket, TicketType } from '@prisma/client';
+import { Enrollment, Payment, Ticket, TicketType } from '@prisma/client';
 import { Room, Hotel } from '@prisma/client';
 
 async function getAllHotels(userId: number) : Promise<Hotel[]>{
@@ -56,6 +56,7 @@ async function getHotelRooms(hotelId : number, userId: number) : Promise<HotelWi
     updatedAt: hotel.updatedAt.toISOString(),
     Rooms : parsedRooms
   }
+
   return hotelWithRooms;
 }
 
