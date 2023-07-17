@@ -71,7 +71,7 @@ export type Hotel = {
   updatedAt: Date
 }
 
-type Room = {
+export type RoomResponse = {
   id: number,
   name: string,
   capacity: number,
@@ -80,7 +80,7 @@ type Room = {
   updatedAt: string,
 }
 
-export type hotelWithRooms =
+export type HotelWithRooms =
   {
     id: number,
     name: string,
