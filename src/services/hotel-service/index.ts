@@ -19,13 +19,14 @@ async function getAllHotels(userId: number) : Promise<Hotel[]>{
   if(!ticket.TicketType.includesHotel) throw paymentRequiredError();
 
   const payment : Payment = await paymentsRepository.findPaymentByTicketId(ticket.id);
-  if(!payment) throw notFoundError();
-  const booking : Booking = await bookinigRepositorie.getUserBooking(userId);
-    if(!booking) throw notFoundError();
+  if(!payment) throw paymentRequiredError();
+  // const booking : Booking = await bookinigRepositorie.getUserBooking(userId);
+  // if(!booking) throw notFoundError();
 
-    const hotels : Hotel[] = await hotelRepository.getAllHotels();
-    if(hotels.length === 0) throw notFoundError();
-    return hotels;
+  const hotels : Hotel[] = await hotelRepository.getAllHotels();
+  if(!hotels || hotels.length === 0 || hotels === undefined) throw notFoundError();
+  console.log(hotels);
+  return hotels;
 }
 
 async function getHotelRooms(hotelId : number, userId: number) : Promise<HotelWithRooms>{
