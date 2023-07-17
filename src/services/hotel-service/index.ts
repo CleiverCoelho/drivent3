@@ -47,11 +47,9 @@ async function getHotelRooms(hotelId : number, userId: number) : Promise<HotelWi
 
   const payment : Payment = await paymentsRepository.findPaymentByTicketId(ticket.id);
   if(!payment) throw notFoundError();
-  const booking : Booking = await bookinigRepositorie.getUserBooking(userId);
-    if(!booking) throw notFoundError();
 
   const hotel : Hotel = await hotelRepository.getHotelById(hotelId);
-  if(!hotel.id) throw notFoundError();
+  if(!hotel) throw notFoundError();
 
   const hotelWithRooms : HotelWithRooms = {
     id: hotel.id,

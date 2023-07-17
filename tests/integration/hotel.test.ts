@@ -37,6 +37,25 @@ describe('GET /hotels when token is valid', () => {
         expect(status).toEqual(httpStatus.NOT_FOUND);
     });
 
+    it('should respond with hotels',async () => {
+        const user = await createUser();
+        const token = await generateValidToken(user);
+        const enrollment = await createEnrollmentWithAddress(user);
+        const isRemote = false;
+        const includesHotel = true;
+        const ticketType = await createTicketTypeForHotel(isRemote, includesHotel);
+        const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
+
+        await createPayment(ticket.id, ticketType.price);
+
+        await createHotels();
+  
+        const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
+  
+        expect(response.status).toEqual(httpStatus.OK);
+        
+    });
+
     it('should respond with status 402 when ticket is not paid', async () => {
         const user = await createUser();
         const token = await generateValidToken(user);
@@ -144,7 +163,7 @@ describe('GET /hotels/:hotelId when token is valid', () => {
 
         await createHotels();
 
-        const {status, body} = await server.get('/hotels/5').set('Authorization', `Bearer ${token}`);
+        const {status, body} = await server.get('/hotels/100000').set('Authorization', `Bearer ${token}`);
 
         expect(status).toEqual(httpStatus.NOT_FOUND);
     });
