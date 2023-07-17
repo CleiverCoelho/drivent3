@@ -21,3 +21,23 @@ export async function buildRoom(id: number){
         }
     })
 }
+
+export async function createHotels() {
+    return prisma.hotel.create({
+        data: {
+        name: faker.company.companyName(),
+        image: faker.image.business(),
+        Rooms: {
+            createMany: {
+            data: [
+                {
+                name: faker.word.noun(),
+                capacity: faker.datatype.number({ min: 1, max: 4 }),
+                }
+            ]
+            }
+        }
+        },
+        include: { Rooms: true },
+    });
+}

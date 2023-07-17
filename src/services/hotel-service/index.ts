@@ -10,11 +10,18 @@ import { Booking, Enrollment, Payment, Ticket, TicketType } from '@prisma/client
 import { Room, Hotel } from '@prisma/client';
 
 async function getAllHotels(userId: number) : Promise<Hotel[]>{
-    const isBooked = checkForUserBooking(userId);
-    if(!isBooked) throw notFoundError;
+  const enrollmentInfo : Enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if(!enrollmentInfo) throw notFoundError();
+  
+  const ticket : Ticket & {TicketType : TicketType} = await ticketsRepository.findTicketByEnrollmentId(enrollmentInfo.id);
+  if(!ticket) throw notFoundError();
+  if(ticket.TicketType.isRemote) throw paymentRequiredError();
+  if(!ticket.TicketType.includesHotel) throw paymentRequiredError();
 
-    const isPaid = checkForuserTicketPayment(userId);
-    if(!isPaid) throw paymentRequiredError();
+  const payment : Payment = await paymentsRepository.findPaymentByTicketId(ticket.id);
+  if(!payment) throw notFoundError();
+  const booking : Booking = await bookinigRepositorie.getUserBooking(userId);
+    if(!booking) throw notFoundError();
 
     const hotels : Hotel[] = await hotelRepository.getAllHotels();
     if(hotels.length === 0) throw notFoundError();
@@ -29,15 +36,21 @@ async function getHotelRooms(hotelId : number, userId: number) : Promise<HotelWi
         ...room, createdAt: room.createdAt.toISOString(), updatedAt: room.updatedAt.toISOString()
     }
   })
+  const enrollmentInfo : Enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if(!enrollmentInfo) throw notFoundError();
+  
+  const ticket : Ticket & {TicketType : TicketType} = await ticketsRepository.findTicketByEnrollmentId(enrollmentInfo.id);
+  if(!ticket) throw notFoundError();
+  if(ticket.TicketType.isRemote) throw paymentRequiredError();
+  if(!ticket.TicketType.includesHotel) throw paymentRequiredError();
 
-  const isBooked = checkForUserBooking(userId);
-    if(!isBooked) throw notFoundError;
-
-    const isPaid = checkForuserTicketPayment(userId);
-    if(!isPaid) throw paymentRequiredError();
+  const payment : Payment = await paymentsRepository.findPaymentByTicketId(ticket.id);
+  if(!payment) throw notFoundError();
+  const booking : Booking = await bookinigRepositorie.getUserBooking(userId);
+    if(!booking) throw notFoundError();
 
   const hotel : Hotel = await hotelRepository.getHotelById(hotelId);
-  if(!hotel) throw notFoundError();
+  if(!hotel.id) throw notFoundError();
 
   const hotelWithRooms : HotelWithRooms = {
     id: hotel.id,
@@ -49,27 +62,5 @@ async function getHotelRooms(hotelId : number, userId: number) : Promise<HotelWi
   }
   return hotelWithRooms;
 }
-
-async function checkForUserBooking(userId: number) : Promise<Boolean>{
-    const booking : Booking = await bookinigRepositorie.getUserBooking(userId);
-    if(!booking) return false;
-
-    return true
-}
-
-async function checkForuserTicketPayment(userId: number) : Promise<Boolean>{
-    const enrollmentInfo : Enrollment= await enrollmentRepository.findWithAddressByUserId(userId);
-    if(!enrollmentInfo) throw notFoundError();
-    const ticket : Ticket & {TicketType : TicketType} = await ticketsRepository.findTicketByEnrollmentId(enrollmentInfo.id);
-    if(!ticket) throw notFoundError();
-    if(ticket.TicketType.isRemote) throw paymentRequiredError();
-    if(!ticket.TicketType.includesHotel) throw paymentRequiredError();
-
-    const payment : Payment = await paymentsRepository.findPaymentByTicketId(ticket.id);
-    if(!payment) return false;
-
-    return true;
-}
-
 
 export default { getHotelRooms, getAllHotels };
