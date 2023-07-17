@@ -53,6 +53,8 @@ async function checkForuserTicketPayment(userId: number) : Promise<Boolean>{
     const enrollmentInfo : Enrollment= await enrollmentRepository.findWithAddressByUserId(userId);
     const ticket : Ticket & {TicketType : TicketType} = await ticketsRepository.findTicketByEnrollmentId(enrollmentInfo.id);
     if(!ticket) throw notFoundError();
+    if(ticket.TicketType.isRemote) throw paymentRequiredError();
+    if(!ticket.TicketType.includesHotel) throw paymentRequiredError();
 
     const payment : Payment = await paymentsRepository.findPaymentByTicketId(ticket.id);
     if(!payment) return false;

@@ -1,4 +1,4 @@
-import { Payment, Ticket } from '@prisma/client';
+import { Payment, Ticket, Room } from '@prisma/client';
 import { type } from 'os';
 
 export type ApplicationError = {
@@ -87,5 +87,12 @@ export type HotelWithRooms =
     image: string,
     createdAt: string,
     updatedAt: string,
-    Rooms: Room[]
+    Rooms: RoomResponse[]
   }
+
+export type CreateHotel = {
+  name: string,
+  image: string,
+  createdAt: Date,
+  updatedAt: Date
+}
