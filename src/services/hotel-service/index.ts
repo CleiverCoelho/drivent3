@@ -23,7 +23,6 @@ async function getAllHotels(userId: number) : Promise<Hotel[]>{
 
   const hotels : Hotel[] = await hotelRepository.getAllHotels();
   if(!hotels || hotels.length === 0 || hotels === undefined) throw notFoundError();
-  // console.log(hotels);
   return hotels;
 }
 
