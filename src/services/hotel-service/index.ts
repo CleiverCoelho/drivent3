@@ -15,7 +15,9 @@ async function getAllHotels(userId: number) : Promise<Hotel[]>{
 
     const isPaid = checkForuserTicketPayment(userId);
     if(!isPaid) throw paymentRequiredError();
+
     const hotels : Hotel[] = await hotelRepository.getAllHotels();
+    if(hotels.length === 0) throw notFoundError();
     return hotels;
 }
 
@@ -27,6 +29,12 @@ async function getHotelRooms(hotelId : number, userId: number) : Promise<HotelWi
         ...room, createdAt: room.createdAt.toISOString(), updatedAt: room.updatedAt.toISOString()
     }
   })
+
+  const isBooked = checkForUserBooking(userId);
+    if(!isBooked) throw notFoundError;
+
+    const isPaid = checkForuserTicketPayment(userId);
+    if(!isPaid) throw paymentRequiredError();
 
   const hotel : Hotel = await hotelRepository.getHotelById(hotelId);
   if(!hotel) throw notFoundError();
@@ -59,7 +67,7 @@ async function checkForuserTicketPayment(userId: number) : Promise<Boolean>{
     const payment : Payment = await paymentsRepository.findPaymentByTicketId(ticket.id);
     if(!payment) return false;
 
-    return true
+    return true;
 }
 
 
