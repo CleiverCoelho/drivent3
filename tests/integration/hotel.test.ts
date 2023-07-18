@@ -171,7 +171,6 @@ describe('GET /hotels/:hotelId when token is valid', () => {
         const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
 
         const hotel = await createHotels();
-
         const data = {
           id: hotel.id,
           name: hotel.name,
