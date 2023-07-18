@@ -13,6 +13,7 @@ const server = supertest(app);
 
 beforeAll(async ()=> {
     await init();
+    await cleanDb();
 })
 
 beforeEach(async ()=> {
@@ -64,35 +65,6 @@ describe('GET /hotels when token is valid', () => {
 
     });
 
-    // it('should respond with status 200 when there is hotels available', async () => {
-    //     const user = await createUser();
-    //     const token = await generateValidToken(user);
-    //     const enrollment = await createEnrollmentWithAddress(user);
-    //     const isRemote = false;
-    //     const includesHotel = true;
-    //     const ticketType = await createTicketTypeForHotel(isRemote, includesHotel);
-
-    //     const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
-    //     await createHotels();
-    //     const {status, body} = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
-        
-    //     const payment = await createPayment(ticket.id, ticketType.price);
-
-    //     expect(status).toEqual(httpStatus.OK);
-    //     expect(body).toEqual(
-    //         expect.arrayContaining([
-    //             expect.objectContaining({
-    //                 id: expect.any(Number),
-    //                 name: expect.any(String),
-    //                 image: expect.any(String),
-    //                 createdAt: expect.any(String),
-    //                 updatedAt: expect.any(String)
-    //             })
-    //         ])
-    //     )
-
-    // });
-
     it('should respond with status 402 when ticket type is remote', async () => {
         const user = await createUser();
         const token = await generateValidToken(user);
@@ -116,9 +88,7 @@ describe('GET /hotels when token is valid', () => {
         const isRemote = true;
         const includesHotel = false;
         const ticketType = await createTicketTypeForHotel(isRemote, includesHotel);
-        const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
-
-        await createPayment(ticket.id, ticketType.price);
+        const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
     
         const {status, body} = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
 
@@ -132,15 +102,20 @@ describe('GET /hotels when token is valid', () => {
         const isRemote = false;
         const includesHotel = true;
         const ticketType = await createTicketTypeForHotel(isRemote, includesHotel);
-        const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
+        const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
 
-        await createPayment(ticket.id, ticketType.price);
-
-        await createHotels();
+        const hotel = await createHotels();
     
         const {status, body} = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
     
-        expect(status).toEqual(httpStatus.OK);
+        expect(status).toBe(httpStatus.OK);
+        expect(body).toEqual([{
+            id: hotel.id, 
+            name: hotel.name, 
+            image: hotel.image, 
+            createdAt: hotel.createdAt.toISOString(), 
+            updatedAt: hotel.updatedAt.toISOString()
+        }]);
         
     });
 });
@@ -177,15 +152,48 @@ describe('GET /hotels/:hotelId when token is valid', () => {
         const enrollment = await createEnrollmentWithAddress(user);
         const isRemote = false;
         const includesHotel = true;
-        const ticketType = await createTicketTypeForHotel(isRemote, includesHotel);
-        const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
-
-        await createPayment(ticket.id, ticketType.price);
-
-        const {status, body} = await server.get('/hotels/100000').set('Authorization', `Bearer ${token}`);
+        const ticketType = await buildTicketWithHotel();
+        const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
+        const hotel = await createHotels();
+        const {status, body} = await server.get('/hotels/5').set('Authorization', `Bearer ${token}`);
 
         expect(status).toEqual(httpStatus.NOT_FOUND);
+    
     });
+
+    it('should respond with hotel rooms', async () => {
+        const user = await createUser();
+        const token = await generateValidToken(user);
+        const enrollment = await createEnrollmentWithAddress(user);
+        const isRemote = false;
+        const includesHotel = true;
+        const ticketType = await createTicketTypeForHotel(isRemote, includesHotel);
+        const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
+
+        const hotel = await createHotels();
+
+        const data = {
+          id: hotel.id,
+          name: hotel.name,
+          image: hotel.image,
+          createdAt: hotel.createdAt.toISOString(),
+          updatedAt: hotel.updatedAt.toISOString(),
+          Rooms: [
+            {
+              id: hotel.Rooms[0].id,
+              name: hotel.Rooms[0].name,
+              capacity: hotel.Rooms[0].capacity,
+              hotelId: hotel.Rooms[0].hotelId,
+              createdAt: hotel.Rooms[0].createdAt.toISOString(),
+              updatedAt: hotel.Rooms[0].updatedAt.toISOString(),
+            }
+          ],
+        };
+    
+        const response = await server.get(`/hotels/${hotel.id}`).set('Authorization', `Bearer ${token}`);
+        expect(response.status).toEqual(httpStatus.OK);
+        expect(response.body).toEqual(data);  
+      });
 
     it('should respond with status 402 when ticket type is remote', async () => {
         const user = await createUser();

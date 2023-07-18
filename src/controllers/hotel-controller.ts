@@ -12,7 +12,6 @@ export async function getAllHotels(req: AuthenticatedRequest, res: Response) {
     try {
       const hotels : Hotel[] = await hotelService.getAllHotels(userId);
       // if(hotels.length === 0) throw notFoundError();
-      // if(true) throw notFoundError();
       return res.status(httpStatus.OK).send(hotels);
     }
     catch(error) {
